@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "header.h": "c",
-        "ioctl.h": "c"
+        "ioctl.h": "c",
+        "uls.h": "c"
     }
 }
