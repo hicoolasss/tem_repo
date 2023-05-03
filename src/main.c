@@ -159,9 +159,14 @@ void handle_l_flag(int argc, const char **argv, int *exit_value) {
     int is_wrong = set_no_errors(argv, argc, 2, &errors, &correct);
     if (is_wrong == 0) {
         files = get_file_array(argc, argv, 2, &fils, &dirs, 0);
-        mx_output_for_L(files, fils, dirs, exit_value);
+        Flag_l(files, fils, dirs, exit_value);
     } else {
-        // ...
+        for (int i = 0; errors[i] != NULL; i++) {
+            mx_printerr("uls: ");
+            mx_printerr(errors[i]);
+            mx_printerr(": No such file or directory\n");
+            *exit_value = 1;
+        }
     }
 
     if (files != NULL) mx_del_strarr(&files);
@@ -180,7 +185,12 @@ void handle_no_flag(int argc, const char **argv, int *exit_value) {
         files = get_file_array(argc, argv, 1, &fils, &dirs, 1);
         mx_standart_output(files, fils, dirs, exit_value);
     } else {
-        // ...
+        for (int i = 0; errors[i] != NULL; i++) {
+            mx_printerr("uls: ");
+            mx_printerr(errors[i]);
+            mx_printerr(": No such file or directory\n");
+            *exit_value = 1;
+        }
     }
 
     if (files != NULL) mx_del_strarr(&files);
