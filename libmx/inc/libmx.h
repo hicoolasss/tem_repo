@@ -82,6 +82,7 @@ bool mx_isspace(char c);
 bool mx_isdigit(int c);
 bool mx_islower(int c);
 bool mx_isupper(int c);
+int mx_toupper(int c);
 bool mx_is_node(t_list *list, char *data);
 
 char *mx_strrejoin(char *s1, char const *s2);
