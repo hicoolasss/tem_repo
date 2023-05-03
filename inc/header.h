@@ -52,4 +52,14 @@ int mx_sort_args(char **arr, int size, int start);
 int mx_sort_link(char **arr, int size);
 int mx_sort_files(char **arr, int size);
 
+void read_dir(DIR *directory, struct dirent **entry, t_flags *flag, char **file_array, int *file_count);
+void sort_args_and_count_errors(int argc, char *argv[], char **file_array, int flag_num_temp, int *file_count, int *check_counter, int *exit_code);
+bool handle_dir_check(char *argv[], int index, struct stat *buff, int *exit_code, bool check_ch_dir);
+void handle_check_value(char *argv[], int index, struct stat *buff, int check, char **file_array, int *j, int *file_count, int *check_counter, int *exit_code, bool check_ch_dir, int flag_num_temp);
+void print_error(char *arg, int errnum, int *exit_code);
+void sort_files_and_links(char **file_array, int file_count, int flag_check, t_flags *flag);
+void print_output(int argc, char *argv[], char **file_array, int file_count, t_flags flag, bool arg_switch, int check_counter);
+void free_file_array(char **file_array, int file_count);
+
+
 #endif
