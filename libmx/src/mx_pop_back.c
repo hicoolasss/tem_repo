@@ -1,19 +1,26 @@
 #include "../inc/libmx.h"
 
-void mx_pop_back(t_list **list) {
-    if (list == NULL || *list == NULL) {
+void mx_pop_back(t_list **head) {
+    t_list *temp = NULL;
+    if (head == NULL)
         return;
-    }
-    if ((*list) -> next == NULL) {
-        free(*list);
-        *list = NULL;
+    if (*head == NULL)
         return;
+    if ((*head)->next == NULL) {
+        free(*head);
+        *head = NULL;
     }
-    t_list *temp = *list;
-    while (temp && temp -> next -> next) {
-        temp = temp -> next;
+    if (temp->next == NULL) {
+        free(*head);
+        *head = NULL;
     }
-    free(temp -> next);
-    temp -> next = NULL;
+    else {
+        temp = *head;
+        while (temp->next->next != NULL)
+        {
+            temp = temp->next;
+        }
+        free(temp->next);
+        temp->next = NULL;
+    }
 }
-

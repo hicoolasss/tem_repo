@@ -1,12 +1,8 @@
 #include "../inc/libmx.h"
-
 void *mx_memchr(const void *s, int c, size_t n) {
-    uc_t *s_temp = (uc_t *)s;
-	while (n--) {
-		if (*s_temp == (uc_t)c) {
-			return s_temp;
-        }
-		s_temp++;
-	}
+	char *b = (char *)s;
+	for (;n > 0; n--, b++)
+		if (*b == (char)c)
+			return b;
 	return NULL;
 }

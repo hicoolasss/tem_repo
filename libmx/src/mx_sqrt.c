@@ -1,14 +1,13 @@
 #include "../inc/libmx.h"
-
 int mx_sqrt(int x) {
-    if (x <= 0) return 0;
-    int count = 1;
-    int sqr_count = count * count;
-    while (x > sqr_count && sqr_count > 0) {
-        count ++;
-        sqr_count = count * count;
+    int div = 1, result = 0;
+    while (x > 0) {
+        x -= div, div += 2;
+        result += x < 0 ? 0 : 1;
     }
-    if (sqr_count == x) return count;
-    return 0;
+    if (x < 0) {
+        return 0;
+    } else {
+        return result;
+    }
 }
-

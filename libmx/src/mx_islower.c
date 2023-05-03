@@ -1,12 +1,11 @@
 #include "../inc/libmx.h"
 
-bool mx_islower(int c) {
-    char alphabet[] = "abcdefghijklmnopqrstuvwxyz";
-    char *letter = alphabet;
-
-    while(*letter != '\0' && *letter != c)
-        ++letter;
-    if (*letter)
-        return true;
-    return false;
+bool mx_islower(int c)
+{
+    if(c >= 97 && c <= 122)
+        {
+        return false;
+        }
+    return true;
 }
+

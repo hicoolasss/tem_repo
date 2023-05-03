@@ -1,21 +1,14 @@
 #include "../inc/libmx.h"
-
 int mx_get_char_index(const char *str, char c) {
-    if (!str || !*str) {
+    if(!str) {
         return -2;
     }
-    int len = mx_strlen(str);
-    int index = 0;
-    while (*str) {
-        if (*str == c) {
-            break;
-        }
-        index++;
-        str++;
+    for(int i = 0; i <= mx_strlen(str); i++)
+  	{
+  		if(str[i] == c)  
+		{
+			return i;   	
+ 		}
     }
-    if (index >= len) {
-        return -1;
-    }
-    return index;
+    return -1;
 }
-
