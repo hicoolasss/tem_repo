@@ -1,5 +1,8 @@
 #include "../inc/uls.h"
 
+void handle_l_flag(int argc, const char **argv, int *exit_value);
+void handle_no_flag(int argc, const char **argv, int *exit_value);
+
 static int set_no_errors(const char** argv, int argc, int spec, char ***errors, char***correct)
 {
     t_stat *statistics1 = NULL;
