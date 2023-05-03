@@ -1,45 +1,40 @@
-NAMEBIN = uls
+CC = clang
+CFLAGS = -std=c11 -Wall -Wextra -Werror -Wpedantic
 
-SRC_DIR = src
 OBJ_DIR = obj
+SRC_DIR = src
 INC_DIR = inc
 LIB_DIR = libmx
+EXENAME = uls
 
-SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
-OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
-INC_FILES = $(wildcard $(INC_DIR)/*.h)
-LIB_FILES = $(wildcard $(LIB_DIR)/$(LIB_DIR).a)
-LIB_INC_FILES = $(wildcard $(LIB_DIR)/$(INC_DIR))
+SRC = $(SRC_DIR)/*.c
 
-CC = clang
-CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -gdwarf-4 -D_GNU_SOURCE
-MAKE = make -C
+ROOT_OBJS = *.o
 
-MKDIR = mkdir -p
-RM = rm -rf
+OBJS = $(OBJ_DIR)/*.o 
 
-all: $(NAMEBIN) clean
+.PHONY: all clean uninstall reinstall
 
-$(NAMEBIN): $(OBJ_FILES)
-	@$(MAKE) $(LIB_DIR)
-	@$(CC) $(CFLAGS) $^ -L$(LIB_DIR) -lmx -o $@
+all:
+	make -sC $(LIB_DIR)
+	make EXENAME
 
-$(OBJ_FILES): | $(OBJ_DIR)
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
-	@$(CC) $(CFLAGS) -c $< -o $@ -I $(INC_DIR) -I $(LIB_INC_FILES) 
-
-$(OBJ_DIR):
-	@$(MKDIR) $@
+EXENAME:
+	mkdir obj
+	$(CC) $(CFLAGS) -c $(SRC)
+	mv $(ROOT_OBJS) $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(OBJS) $(LIB_DIR)/libmx.a -o $(EXENAME)
 
 clean:
-	@$(RM) $(OBJ_DIR)
-	@$(RM) $(LIB_FILES)
+	rm -rf obj
+	rm -rf $(LIB_DIR)/obj
 
 uninstall:
-	@$(RM) $(OBJ_DIR)
-	@$(RM) $(NAMEBIN)
+	make clean
+	rm -rf $(LIB_DIR)/libmx.a
+	rm -rf $(EXENAME)
 
-reinstall: uninstall all
+reinstall:
+	make uninstall
+	make all
 
-.PHONY: all uninstall clean reinstall

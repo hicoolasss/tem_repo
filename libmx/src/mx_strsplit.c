@@ -1,34 +1,30 @@
 #include "../inc/libmx.h"
 
-typedef struct
-{
-    const char *start;
-    size_t len;
-} token;
-
 char **mx_strsplit(const char *s, char c) {
-    if (s == NULL) return NULL;
-    char **array;
-    unsigned int start = 0, stop, toks = 0, t;
-    token *tokens = malloc((mx_strlen(s) + 1) * sizeof(token));
-    for (stop = 0; s[stop]; stop++) {
-        if (s[stop] == c) {
-            tokens[toks].start = s + start;
-            tokens[toks].len = stop - start;
-                toks++;
-            start = stop + 1;
+    if (!s) {
+        return NULL;
+    }
+    char **arr = NULL;
+    int length = 0;
+    int i = 0;
+   
+    arr = (char**)malloc((mx_count_words(s, c) + 1) * sizeof(char*));
+    while ((*s) && (*s != '\0')) {
+        length = 0;
+        if (*s != c) {
+
+            const char *temp = s;
+            while (temp[length] && temp[length] != c) {
+                length++;
+            }
+            arr[i] = mx_strndup(s, length);
+            s += length;
+            i++;
+            continue;
         }
+        s++;
     }
-    tokens[toks].start = s + start;
-    tokens[toks].len = stop - start;
-    toks++;
-    array = malloc((toks + 1) * sizeof(char *));
-    for (t = 0; t < toks; t++) {
-            char *token = mx_strnew(tokens[t].len);
-            mx_strncpy(token, tokens[t].start, tokens[t].len);
-            array[t] = token;
-    }
-    array[t] = NULL;
-    free(tokens);
-    return array;
+    arr[i] = NULL;
+    return arr;
 }
+

@@ -1,25 +1,47 @@
 #include "../inc/libmx.h"
+
+char *mx_strjoin_free(char const *s1, char const *s2) {
+    if (!s1 && !s2)
+        return NULL;
+    if (!s1 && s2)
+        return mx_strdup(s2);
+    if (s1 && !s2)
+        return mx_strdup(s1);
+    char *new_str = mx_strnew(mx_strlen(s1) + mx_strlen(s2));
+    new_str = mx_strcat(mx_strcpy(new_str, s1), s2);
+    char *to_delete = (char*)s1;
+    mx_strdel(&to_delete);
+    return new_str;
+}
+
 int mx_read_line(char **lineptr, size_t buf_size, char delim, const int fd) {
-    char *buf = mx_strnew(buf_size);
-    char *str = mx_strnew(buf_size);
-    size_t type;
-    if (fd > 0) {
-        while ((type = read(fd, buf, buf_size)) > 0) {
-            mx_strcat(str, buf);
+    if (buf_size == 0) return -2;
+    buf_size = 1;
+    int res = 0;
+    int bytes;
+    char *temp = *lineptr;
+    *lineptr = NULL;
+    char *buffer = mx_strnew(buf_size);
+    while ((bytes = read(fd, buffer, buf_size)) > 0) {
+        if (mx_get_char_index(buffer, delim) >= 0) {
+            buffer[mx_get_char_index(buffer, delim)] = '\0';
+            *lineptr = mx_strjoin_free(*lineptr, buffer);
+            res += mx_strlen(buffer);
+            free(buffer);
+            free(temp);
+            return res;
         }
-        if (type < 0)
-            return -1;
-        int index = mx_get_char_index(str, delim);
-        if (index == -1) {
-            *lineptr = str;
-            return -1;
-        }
+        *lineptr = mx_strjoin_free(*lineptr, buffer);
+        res += bytes;
+    }
+    if (res == 0) {
+        *lineptr = temp;
+        free(buffer);
+        if (bytes == -1)
+            return -2;
         else
-            mx_strncpy(*lineptr, str, index);
-        close(fd);
-        free(buf);
-        free(str);
-        return index;
-        }
-    return -2;
+            return -1;
+    }
+    free(buffer);
+    return res;
 }

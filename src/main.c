@@ -1,175 +1,261 @@
-#include <../inc/header.h>
+#include "../inc/uls.h"
 
-int main(int argc, char *argv[])
+static int set_no_errors(const char** argv, int argc, int spec, char ***errors, char***correct)
 {
-    char current_dir[256];
-    char *dir_path = ".";
-    int dir_len = mx_strlen(dir_path) + 1;
-    DIR *directory;
-    char **file_array = (char **)malloc((100 + 1) * sizeof(char *));
-    int file_count = 0;
-    int exit_code = 0;
-    struct dirent *entry;
-    t_flags flag;
-    int flag_num_temp = 0;
-    int flag_check = check_flag(argc, argv, &flag, &flag_num_temp);
-    bool arg_switch = false;
+	t_stat * statistics1 = NULL;
+	int counter = 0;
+	for(int i = spec; i < argc; i++)
+	{
+		statistics1 = (t_stat *)malloc(sizeof(t_stat));
+		int lst = lstat(argv[i], statistics1);
+		if(lst == -1) counter++;
+		free(statistics1);
+		statistics1 = NULL;
+	}
 
-    if ((directory = opendir(dir_path)) != NULL)
-    {
-        mx_strcpy(current_dir, dir_path);
-        int check_counter = 0;
-        if (!flag_check)
-        {
-            read_dir(directory, &entry, &flag, file_array, &file_count);
-        }
-        else
-        {
-            arg_switch = true;
-            sort_args_and_count_errors(argc, argv, file_array, flag_num_temp, &file_count, &check_counter, &exit_code);
-        }
-        closedir(directory);
+	if (counter == 0) return 0;
+	else
+	{
+		if((argc - spec - counter)!=0)
+		{
+			*correct = (char**)malloc(sizeof(char*)*(argc - spec - counter));
+			for (int i = 0; i < argc - spec - counter; ++i)
+			{
+				(*correct)[i] = mx_strnew(256);
+			}
+			int fd = 0;
+			for(int i = spec; i < argc; i++)
+			{
+				statistics1 = (t_stat *)malloc(sizeof(t_stat));
+				int lst = lstat(argv[i], statistics1);
+				if(lst != -1)
+				{
+					(*correct)[fd++] = mx_strdup(argv[i]);
+				}
+				free(statistics1);
+				statistics1 = NULL;
+			}
 
-        if (file_count > 0)
-        {
-            sort_files_and_links(file_array, file_count, flag_check, &flag);
-            print_output(argc, argv, file_array, file_count, flag, arg_switch, check_counter, dir_path, dir_len);
-        }
-    }
-    free_file_array(file_array, file_count);
+		}
 
-    return exit_code;
+		*errors = (char**)malloc(sizeof(char*)*counter);
+		for (int i = 0; i < counter; ++i)
+		{
+			(*errors)[i] = mx_strnew(256);
+		}
+		int fd = 0;
+		for(int i = spec; i < argc; i++)
+		{
+			statistics1 = (t_stat *)malloc(sizeof(t_stat));
+			int lst = lstat(argv[i], statistics1);
+			if(lst == -1)
+			{
+				(*errors)[fd++] = mx_strdup(argv[i]);
+			}
+			free(statistics1);
+			statistics1 = NULL;
+		}
+	}
+
+	return counter;
 }
 
-void read_dir(DIR *directory, struct dirent **entry, t_flags *flag, char **file_array, int *file_count)
+static char** get_file_array(int argc, const char** argv, int spec, int*fils, int*dirs, int iflnk) 
 {
-    while ((*entry = readdir(directory)) != NULL)
-    {
-        if (flag->A == 2)
-        {
-            if (mx_strcmp((*entry)->d_name, ".") == 0 || mx_strcmp((*entry)->d_name, "..") == 0)
-            {
-                continue;
-            }
-        }
-        if (flag->a != 2 && flag->A != 2)
-        {
-            if ((*entry)->d_name[0] == '.')
-            {
-                continue;
-            }
-        }
-        if (mx_strcmp((*entry)->d_name, "uls") == 0)
-        {
-            continue;
-        }
-        file_array[*file_count] = mx_strdup((*entry)->d_name);
-        (*file_count)++;
+	int size = argc - spec;
+    char** files = malloc(sizeof(char*) * (size + 1));
+	for(int i = 0; i < size; i++)
+	{
+		files[i] = mx_strdup(argv[i+spec]);
+	}
+	files[size] = NULL;
+	t_stat * statistics1 = NULL;
+	t_stat * statistics2 = NULL;
+
+	for (int i = 0; i < size; ++i) 
+	{
+		statistics1 = (t_stat *)malloc(sizeof(t_stat));
+		lstat(files[i], statistics1);
+		if(iflnk == 0)
+		{
+			if(!S_ISDIR(statistics1->st_mode)) 
+			{
+				(*fils)++;
+			}
+			else (*dirs)++;
+		}
+		else
+		{
+			if(!S_ISDIR(statistics1->st_mode) && !S_ISLNK(statistics1->st_mode)) 
+			{
+				(*fils)++;
+			}
+			else (*dirs)++;
+		}
+		free(statistics1); statistics1 = NULL;
     }
+
+	for(int j = 0; j < size; j++)
+	{
+		for (int i = 0; i < size - 1; ++i) 
+		{
+			statistics1 = (t_stat *)malloc(sizeof(t_stat));
+			lstat(files[i], statistics1);
+			statistics2 = (t_stat *)malloc(sizeof(t_stat));
+			lstat(files[i+1], statistics2);
+
+			if(iflnk == 0)
+			{
+				if(S_ISDIR(statistics1->st_mode) && !S_ISDIR(statistics2->st_mode)) 
+				{
+					char*temp = mx_strdup(files[i]);
+					files[i] = mx_strdup(files[i+1]);
+					files[i+1] = mx_strdup(temp);
+				}
+			}
+			else
+			{
+				if((S_ISDIR(statistics1->st_mode) || S_ISLNK(statistics1->st_mode)) && 
+					(!S_ISDIR(statistics2->st_mode) && !S_ISLNK(statistics2->st_mode))) 
+				{
+					char*temp = mx_strdup(files[i]);
+					files[i] = mx_strdup(files[i+1]);
+					files[i+1] = mx_strdup(temp);
+				}
+			}
+			free(statistics1); statistics1 = NULL;
+			free(statistics2); statistics2 = NULL;
+    	}
+	}
+
+	for(int j = 0; j < (*fils); j++)
+	{
+		for(int i = 0; i < (*fils)-1; i++)
+		{
+			if(mx_strcmp(files[i], files[i+1]) > 0)
+			{
+				char*temp = mx_strdup(files[i]);
+				files[i] = mx_strdup(files[i+1]);
+				files[i+1] = mx_strdup(temp);
+			}
+		}
+	}
+
+	for(int j = 0; j < (*dirs); j++)
+	{
+		for(int i = (*fils); i < size - 1; i++)
+		{
+			if(mx_strcmp(files[i], files[i+1]) > 0)
+			{
+				char*temp = mx_strdup(files[i]);
+				files[i] = mx_strdup(files[i+1]);
+				files[i+1] = mx_strdup(temp);
+			}
+		}
+	}
+    return files;
+
 }
 
-void sort_args_and_count_errors(int argc, char *argv[], char **file_array, int flag_num_temp, int *file_count, int *check_counter, int *exit_code)
+int main(int argc, char const *argv[])
 {
-    mx_sort_args(argv, argc, flag_num_temp);
-    for (int i = 1, j = 0; i < argc; i++)
-    {
-        struct stat buff;
-        int check = stat(argv[i], &buff);
-        bool check_ch_dir = true;
+	t_flags flags;
+	int exit_value = 0;
 
-        check_ch_dir = handle_dir_check(argv, i, &buff, exit_code, check_ch_dir);
+	int i = 1;
+	while(i!=argc && argv[i][0] == '-')
+	{
+		for (int j = 1; j < mx_strlen(argv[i]); ++j)
+		{
+			if(argv[i][j] == 'l') flags.l = 1;
+			else 
+			{
+				mx_printerr("uls: illegal option -- ");
+				mx_printerr(&argv[i][j]);
+				mx_printerr("\nusage: uls [-l] [file ...]\n");
+				return 1;
+			}
+		}
+		i++;
+	}
 
-        if (mx_strcmp(argv[i], "-") == 0 && check != 0)
-        {
-            print_error(argv[i], errno, exit_code);
-        }
+	int fils = 0, dirs = 0;
+	char**errors = NULL;
+	char**correct = NULL;
+	char **files = NULL;
 
-        handle_check_value(argv, i, check, file_array, &j, file_count, check_counter, exit_code, check_ch_dir, flag_num_temp);
-    }
+	if(flags.l == 1)
+	{
+		int is_wrong = set_no_errors(argv, argc, 2, &errors, &correct);
+		if(is_wrong == 0)
+		{
+			files = get_file_array(argc, argv, 2, &fils, &dirs, 0);
+			mx_output_for_L(files, fils, dirs, &exit_value);
+		}
+		else
+		{
+			mx_sort_strarr(&errors);
+			if(is_wrong == argc - 2)
+			{
+				for(int i = 0; i < is_wrong; i++)
+				{
+					mx_printerr("uls: ");
+					mx_printerr(errors[i]);
+					mx_printerr(": No such file or directory\n");
+				}
+			}
+			else
+			{
+				for(int i = 0; i < is_wrong; i++)
+				{
+					mx_printerr("uls: ");
+					mx_printerr(errors[i]);
+					mx_printerr(": No such file or directory\n");
+				}
+				files = get_file_array(argc - 2 - is_wrong, (const char**)correct, 0, &fils, &dirs, 0);
+				mx_output_for_L(files, fils, dirs, &exit_value);
+			}
+			exit_value = 1;
+		}
+	}
+
+	else
+	{
+		int is_wrong = set_no_errors(argv, argc, 1, &errors, &correct);
+		if(is_wrong == 0)
+		{
+			files = get_file_array(argc, argv, 1, &fils, &dirs, 1);
+			mx_standart_output(files, fils, dirs, &exit_value);
+		}
+		else
+		{
+			mx_sort_strarr(&errors);
+			if(is_wrong == argc - 1)
+			{
+				for(int i = 0; i < is_wrong; i++)
+				{
+					mx_printerr("uls: ");
+					mx_printerr(errors[i]);
+					mx_printerr(": No such file or directory\n");
+				}
+			}
+			else
+			{
+				for(int i = 0; i < is_wrong; i++)
+				{
+					mx_printerr("uls: ");
+					mx_printerr(errors[i]);
+					mx_printerr(": No such file or directory\n");
+				}
+				files = get_file_array(argc - 1 - is_wrong, (const char**)correct, 0, &fils, &dirs, 1);
+				mx_standart_output(files, fils, dirs, &exit_value);
+			}
+		}
+
+	}
+	if(files!=NULL)mx_del_strarr(&files);
+	if(correct!=NULL)mx_del_strarr(&correct);
+	if(errors!=NULL)mx_del_strarr(&errors);
+	return exit_value;
 }
 
-bool handle_dir_check(char *argv[], int index, struct stat *buff, int *exit_code, bool check_ch_dir)
-{
-    if (((buff->st_mode) & S_IFMT) == S_IFDIR)
-    {
-        DIR *dir_temp = opendir(argv[index]);
-        if (dir_temp == NULL)
-        {
-            print_error(argv[index], errno, exit_code);
-            check_ch_dir = false;
-        }
-        else
-        {
-            closedir(dir_temp);
-        }
-    }
-    return check_ch_dir;
-}
-
-void handle_check_value(char *argv[], int index, int check, char **file_array, int *j, int *file_count, int *check_counter, int *exit_code, bool check_ch_dir, int flag_num_temp)
-{
-    if ((argv[index][0] != '-' || (argv[index][0] == '-' && mx_strlen(argv[index]) > 1)) && check != 0 && flag_num_temp <= index)
-    {
-        print_error(argv[index], errno, exit_code);
-        (*check_counter)++;
-    }
-    if ((argv[index][0] != '-' || (argv[index][0] == '-' && mx_strlen(argv[index]) == 1)) && check == 0 && check_ch_dir)
-    {
-        file_array[*j] = mx_strdup(argv[index]);
-        (*j)++;
-        (*file_count)++;
-    }
-}
-
-void print_error(char *arg, int errnum, int *exit_code)
-{
-    mx_printerr("uls: ");
-    mx_printerr(arg);
-    mx_printerr(": ");
-    mx_printerr(strerror(errnum));
-    mx_printerr("\n");
-    *exit_code = EXIT_FAILURE;
-}
-
-void sort_files_and_links(char **file_array, int file_count, int flag_check, t_flags *flag)
-{
-    mx_bubble_sort(file_array, file_count);
-    if (flag_check)
-    {
-        mx_sort_files(file_array, file_count);
-    }
-    mx_sort_link(file_array, file_count);
-    if (flag->t == 2)
-    {
-        ls_time_sort(file_array, file_count, ((flag->u == 2) ? 1 : ((flag->c == 2) ? 2 : 0)));
-    }
-    if (flag->r == 2)
-    {
-        reverse_sort(file_array, file_count);
-    }
-}
-
-void print_output(int argc, char *argv[], char **file_array, int file_count, t_flags flag, bool arg_switch, int check_counter, char *dir_path, int dir_len)
-{
-    if (flag.l != 2 && flag.R != 2)
-    {
-        standart_ls(argc, argv, file_array, file_count, flag);
-    }
-    if (flag.l == 2 && flag.R != 2)
-    {
-        ls_long(file_array, file_count, flag, arg_switch, check_counter);
-    }
-    if (flag.R == 2)
-    {
-        ls_R(argc, argv, file_count, dir_path, flag, dir_len, arg_switch);
-    }
-}
-
-void free_file_array(char **file_array, int file_count)
-{
-    for (int i = 0; i < file_count; i++)
-    {
-        free(file_array[i]);
-    }
-    free(file_array);
-}

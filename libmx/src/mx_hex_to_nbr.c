@@ -1,34 +1,30 @@
 #include "../inc/libmx.h"
 
-unsigned long mx_hex_to_nbr(const char *hex)
-{
-    if(hex == NULL) {
-        return 0;
-    }
-    unsigned long int decimal = 0;
-    unsigned long int base = 1;
-    int i = 0;
-    int size = 0;
-    while (hex[size] != '\0')
-        size++;
-    size--;
-    for (i = size; i >= 0; i--)
-    {
-        if (mx_isdigit(hex[i])) 
-        {
-            decimal += (hex[i] - 48) * base;
-            base *= 16;
+unsigned long mx_hex_to_nbr(const char *hex) { 
+    if (hex == NULL) return 0;        
+    unsigned long decimal = 0, i = 0, val, len = 0;                   
+    const char *ptr = hex;
+    while(*ptr++) len++;
+    len--;  
+    while(hex[i]!='\0') {  
+        if(hex[i]>='0' && hex[i]<='9') {  
+            val = hex[i] - 48;  
+        }  
+        else if(hex[i]>='a' && hex[i]<='f') {  
+            val = hex[i] - 97 + 10;  
+        }  
+        else if(hex[i]>='A' && hex[i]<='F') {  
+            val = hex[i] - 65 + 10;  
+        } 
+        else return 0;
+        unsigned long c = 1; 
+        for (unsigned long j = 0; j < len; j++) {
+            c *= 16;
         }
-        else if (mx_isupper(hex[i])) 
-        {
-            decimal += (hex[i] - 55) * base;
-            base *= 16;
-        }
-        else if (mx_islower(hex[i])) 
-        {
-            decimal += (hex[i] - 87) * base;
-            base *= 16;
-        }
+        decimal += val * c;
+        i++;
+        len--;
     }
     return decimal;
 }
+
