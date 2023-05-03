@@ -1,38 +1,31 @@
 #include "../inc/libmx.h"
 
 int mx_quicksort(char **arr, int left, int right) {
-    if (!arr) {
-         return -1;
-    }
-    int number_of_swaps = 0;
-
+    if (!arr) return -1;
+    int count = 0;
     if (left < right) {
-        int temp_left = left;
-        int temp_right = right;
-        char *current = arr[(temp_right + temp_left) / 2];
+        int i = left;
+        int j = right;
+        char *middle = arr[(i + j) / 2];
 
-        while (temp_left <= temp_right) {
-            
-            while (mx_strlen(arr[temp_right]) > mx_strlen(current)) {
-                temp_right--;
-            }
-            while (mx_strlen(arr[temp_left]) < mx_strlen(current)) {
-                temp_left++;
-            }
-            if (temp_left <= temp_right) {
-                if (mx_strlen(arr[temp_right]) != mx_strlen(arr[temp_left])) {
-                    char *temp = arr[temp_left];
-                    arr[temp_left] = arr[temp_right];
-                    arr[temp_right] = temp;
-                    number_of_swaps++;
+        while (i <= j) {
+            while(mx_strlen(arr[i]) < mx_strlen(middle)) 
+                i++;
+            while(mx_strlen(arr[j]) > mx_strlen(middle))
+                j--;
+            if (i <= j) {
+                if (mx_strlen(arr[i]) != mx_strlen(arr[j])) {
+                    char *temp = arr[i];
+                    arr[i] = arr[j];
+                    arr[j] = temp;
+                    count++;
                 }
-                temp_right--;
-                temp_left++;
+                j--;
+                i++;
             }
         }
-
-        number_of_swaps += mx_quicksort(arr, left, temp_right);
-        number_of_swaps += mx_quicksort(arr, temp_left, right);
+        count += mx_quicksort(arr, left, j);
+        count += mx_quicksort(arr, i, right);
     }
-    return number_of_swaps;
+    return count;
 }

@@ -1,17 +1,13 @@
 #include "../inc/libmx.h"
-
 int mx_sqrt(int x) {
-    if(x <= 0){
-        return 0;
-    }    
-    double num = 1;
-    for(int i = 0; i <= 10000; i++){
-        num -= (num * num - x) / (num * 2);
+    int div = 1, result = 0;
+    while (x > 0) {
+        x -= div, div += 2;
+        result += x < 0 ? 0 : 1;
     }
-    if(num - (int)num == 0) {
-        return (int)num;
-    }
-    else
+    if (x < 0) {
         return 0;
+    } else {
+        return result;
+    }
 }
-

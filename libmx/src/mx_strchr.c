@@ -1,11 +1,13 @@
 #include "../inc/libmx.h"
-
 char *mx_strchr(const char *s, int c)
 {
-    do {
-        if(*s == c)
-            return (char*)s;
-    } while (*s++);
-    
-    return NULL;
+    while (*s) {
+        if (*s == c) {
+            return (char *)s;
+        }
+        else {
+            s++;
+        }
+    }
+    return 0;
 }
