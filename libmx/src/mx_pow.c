@@ -1,7 +1,12 @@
 #include "../inc/libmx.h"
+
 double mx_pow(double n, unsigned int pow) {
-double value = 1;
-    for (unsigned int i = 0; i < pow; i++)
-    value *= n;
-    return value;
+    if(pow == 0) {
+        return 1;
+    }
+    double prod = n;
+    for(unsigned int i = 1; i < pow; i++) {
+        n *= prod;
+    }
+    return n;
 }

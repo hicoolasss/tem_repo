@@ -1,45 +1,40 @@
-NAMEBIN = uls
+SRC_DIR	= src
+INC_DIR	= inc
+OBJ_DIR	= obj
 
-SRC_DIR = src
-OBJ_DIR = obj
-INC_DIR = inc
-LIB_DIR = libmx
-
+INC_FILES = $(wildcard $(INC_DIR)/*.h)
 SRC_FILES = $(wildcard $(SRC_DIR)/*.c)
 OBJ_FILES = $(addprefix $(OBJ_DIR)/, $(notdir $(SRC_FILES:%.c=%.o)))
-INC_FILES = $(wildcard $(INC_DIR)/*.h)
-LIB_FILES = $(wildcard $(LIB_DIR)/$(LIB_DIR).a)
-LIB_INC_FILES = $(wildcard $(LIB_DIR)/$(INC_DIR))
 
-CC = clang
-CFLAGS = -std=c11 $(addprefix -W, all extra error pedantic) -gdwarf-4 -D_GNU_SOURCE
-MAKE = make -C
+LMX_DIR	= libmx
+LMX_A:=	$(LMX_DIR)/libmx.a
+LMX_INC:= $(LMX_DIR)/inc
 
-MKDIR = mkdir -p
-RM = rm -rf
+all: install
 
-all: $(NAMEBIN) clean
+install: $(LMX_A) uls
 
-$(NAMEBIN): $(OBJ_FILES)
-	@$(MAKE) $(LIB_DIR)
-	@$(CC) $(CFLAGS) $^ -L$(LIB_DIR) -lmx -o $@
+uls: $(OBJ_FILES)
+	@clang -std=c11 -Wall -Wextra -Werror -Wpedantic -g $(OBJ_FILES) -L$(LMX_DIR) -lmx -o $@
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
+	@clang -std=c11 -Wall -Wextra -Werror -Wpedantic -g -c $< -o $@ -I$(INC_DIR) -I$(LMX_INC)
 
 $(OBJ_FILES): | $(OBJ_DIR)
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c $(INC_FILES)
-	@$(CC) $(CFLAGS) -c $< -o $@ -I $(INC_DIR) -I $(LIB_INC_FILES) 
-
 $(OBJ_DIR):
-	@$(MKDIR) $@
+	@mkdir -p $@
 
+$(LMX_A):
+	@make -sC $(LMX_DIR)
+	
 clean:
-	@$(RM) $(OBJ_DIR)
-	@$(RM) $(LIB_FILES)
+	@rm -rf $(OBJ_DIR)
+	@make clean -sC $(LMX_DIR)
 
 uninstall:
-	@$(RM) $(OBJ_DIR)
-	@$(RM) $(NAMEBIN)
+	@make -sC $(LMX_DIR) $@
+	@rm -rf $(OBJ_DIR)
+	@rm -rf $(uls)
 
 reinstall: uninstall all
-
-.PHONY: all uninstall clean reinstall
