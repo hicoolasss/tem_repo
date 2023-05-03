@@ -122,7 +122,7 @@ static void format_output_def(t_list *files_s)
     }
     else
     {
-        //mx_sort_list(files_s);
+        //mx_sort_list(files_s, &mx_strcmp);
         while (files_s!= NULL) 
         {
                 mx_printstr(files_s->data);
@@ -139,7 +139,7 @@ void mx_standart_output(char **argv, int fils, int dirs, int* exit_value)
     if(fils == 0 && dirs == 0)
     {
         set_info(".", &files_s);
-        mx_sort_list(files_s);
+        mx_sort_list(files_s, &mx_strcmp);
         format_output_def(files_s);
     }
     else if ((fils == 1 && dirs == 0)||(fils == 0 && dirs == 1))
@@ -150,7 +150,7 @@ void mx_standart_output(char **argv, int fils, int dirs, int* exit_value)
             *exit_value = 1;
             return;
         }
-        mx_sort_list(files_s);
+        mx_sort_list(files_s, &mx_strcmp);
         format_output_def(files_s);
     }
     else 
@@ -159,7 +159,7 @@ void mx_standart_output(char **argv, int fils, int dirs, int* exit_value)
         {
             set_info(argv[i], &files_s);     
         }
-        mx_sort_list(files_s);
+        mx_sort_list(files_s, &mx_strcmp);
         format_output_def(files_s); 
         mx_clear_list(&files_s);
 
@@ -179,7 +179,7 @@ void mx_standart_output(char **argv, int fils, int dirs, int* exit_value)
                 if(i+1 != fils+dirs) mx_printchar('\n');
                 continue;
             }
-            mx_sort_list(files_s);
+            mx_sort_list(files_s, &mx_strcmp);
             format_output_def(files_s);
             mx_clear_list(&files_s);
             if(i+1 == fils+dirs) break;

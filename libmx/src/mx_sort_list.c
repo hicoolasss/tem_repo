@@ -1,6 +1,6 @@
 #include "../inc/libmx.h"
 
-t_list *mx_sort_list(t_list *lst, bool (*cmp)(void *a, void *b)) {
+t_list *mx_sort_list(t_list *lst, int (*cmp)(void *a, void *b)) {
 	if (lst && cmp) {
         for (t_list *temp1 = lst; temp1; temp1 = temp1->next){
 			for (t_list *temp2 = lst; temp2->next; temp2 = temp2->next) {
