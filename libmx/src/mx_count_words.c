@@ -1,15 +1,23 @@
 #include "../inc/libmx.h"
-int mx_count_words(const char *str, char delimiter) {
-    int state = 1;
-    int count = 0;
-    while (*str) {
-        if (*str == delimiter){
-            state = 1;
-        } else if (state == 1) {
-            state = 0;
-            ++count;
+
+int mx_count_words(const char *str, char c) {
+    if (str == NULL) {
+        return -1;
+    }
+
+    bool state = true;
+    unsigned count = 0;
+    int i = 0;
+
+    while (str[i]) {
+        if (str[i] == c) {
+            state = true;
         }
-        ++str;
+        else if (state) {
+            state = false;
+            count++;
+        }
+        i++;
     }
     return count;
 }

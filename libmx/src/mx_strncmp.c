@@ -1,8 +1,13 @@
 #include "../inc/libmx.h"
-int mx_strncmp(const char *s1, const char *s2, int n)
-{
-    const char *end = s1 + n;
-    int result = 0;
-    for (; result == 0 && s1 != end && (*s1 || *s2); result = *(s1++) - *(s2++));
-    return result;
+
+int mx_strncmp(const char *s1, const char *s2, int n) {
+    while (n--) {
+        if (*s1 != *s2) {
+            return *(const uc_t*)s1 - *(const uc_t*)s2;
+        }
+        s1++;
+        s2++;
+    }
+    return 0;
 }
+

@@ -22,3 +22,4 @@ t_list *mx_sort_list(t_list *list, int (*cmp)(const char*, const char*)) {
     }
     return list;
 }
+
