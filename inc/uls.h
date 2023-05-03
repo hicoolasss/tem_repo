@@ -7,7 +7,7 @@
 #include <grp.h>
 #include <sys/xattr.h>
 #include <sys/ioctl.h>
-// #include <sys/acl.h>
+#include <sys/acl.h>
 #include <sys/errno.h>
 #include <time.h>
 #include <string.h>
