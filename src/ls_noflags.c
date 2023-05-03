@@ -15,7 +15,7 @@ void standart_ls(int argc, char *argv[], char **strarr, int counter,  t_flags fl
     DIR *dir;
     struct dirent *dirent_new;
     bool is_directory = false;
-    bool is_add = false;
+    // bool is_add = false;
     bool is_empty = true;
     bool is_error = false;
     int counter_dir = 0;
@@ -30,7 +30,7 @@ void standart_ls(int argc, char *argv[], char **strarr, int counter,  t_flags fl
             arrdir[counter_dir] = mx_strdup(argv[i]);
             counter_dir++;
             is_open = true;
-            is_add = true;
+            // is_add = true;
         }
         if(is_open){
             closedir(dir);
@@ -41,7 +41,7 @@ void standart_ls(int argc, char *argv[], char **strarr, int counter,  t_flags fl
         if(stat(argv[i], &buff) != -1){
             arrfiles[counter_files] = mx_strdup(argv[i]);
             counter_files++;
-            is_add = true;
+            // is_add = true;
         }
         else{
             is_error = true;

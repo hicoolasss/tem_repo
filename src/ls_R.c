@@ -180,7 +180,7 @@ static void recursivly_function(char *namedir, t_flags flag, int len_dir, bool a
 
 
 void ls_R(int argc, char *argv[], int counter, char *path, t_flags flag, int len_dir, bool arg_trans){
-    bool is_open = false;
+    // bool is_open = false;
     bool check = false;
     char **arrfiles = (char **)malloc((counter + 1) * sizeof(char *));
     char **arrdir = (char **)malloc((counter + 1) * sizeof(char *));
@@ -204,7 +204,7 @@ void ls_R(int argc, char *argv[], int counter, char *path, t_flags flag, int len
             is_directory = true;
             arrdir[counter_dir] = mx_strdup(argv[i]);
             counter_dir++;
-            is_open = true;
+            // is_open = true;
             closedir(dir);
         }
         if(is_directory){
